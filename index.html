@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <title>Document</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      #logo > a > img {
+        margin-left: 50px;
+        width: 200px;
+      }
+      #navbar {
+        display: flex;
+        align-items: center;
+        /* border: 1px solid; */
+        overflow: hidden;
+        position: relative;
+      }
+      #navbar a.icon {
+        background: black;
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+      #navbar a {
+        /* border: 1px solid; */
+        color: black;
+        padding: 14px 16px;
+        text-decoration: none;
+        font-size: 17px;
+        display: block;
+      }
+
+      .active {
+        /* border: 1px solid; */
+        background-color: aquamarine;
+        color: white;
+      }
+      #query {
+        margin-left: 300px;
+        width: 400px;
+        height: 30px;
+      }
+      #search {
+        margin-left: 10px;
+        height: 30px;
+      }
+      #filter {
+        margin-left: 10px;
+        height: 30px;
+      }
+      .hrline {
+        height: 5px;
+        width: 100%;
+        background-color: black;
+      }
+      #parallel {
+        display: flex;
+        flex-direction: row;
+      }
+      #links {
+        margin-top: 50px;
+        margin-left: 10px;
+        width: 550px;
+        display: flex;
+        gap: 10px;
+        /* border: 1px solid; */
+        padding: 10px;
+        flex-direction: column;
+      }
+      #container {
+        margin-top: 50px;
+        display: grid;
+        grid-template-columns: repeat(4, 320px);
+        grid-gap: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar">
+      <div id="logo">
+        <a
+          href="F:\Massai\New folder\Sombir_fw19_0187\unit-3\sprint-3\day-1\we\Youtubeapp.html"
+          ><img
+            src="https://static.vecteezy.com/system/resources/previews/003/206/623/original/youtube-editorial-app-icon-free-vector.jpg"
+            alt="YouTube"
+          />
+        </a>
+      </div>
+      <input type="text" name="" id="query" />
+      <button id="search" onClick="search()">Search</button>
+      <button onclick="filter()" id="filter">Filter</button>
+    </div>
+    <div class="hrline"></div>
+    <div id="parallel">
+      <div id="links">
+        <a href="#Home">Home</a>
+        <a href="#Explore">Explore</a>
+        <a href="#Shorts">Shorts</a>
+        <a href="#Subscriptions">Subscriptions</a>
+        <a href="#Library">Library</a>
+        <a href="#History">History</a>
+        <a href="#Your videos">Your videos</a>
+        <a href="#Watch later">Watch later</a>
+        <a href="#Liked videos">Liked videos</a>
+        <a href="#Show more">Show more</a>
+      </div>
+      <div id="container"></div>
+    </div>
+  </body>
+</html>
+<script>
+  // api=`AIzaSyDByU2cLMaKSElJ66OFBxDd01R4Ngv7M8A`;
+  // url=`https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=kgf&key=AIzaSyDByU2cLMaKSElJ66OFBxDd01R4Ngv7M8A`
+
+  let input = document.getElementById("query");
+  input.addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("search").click();
+    }
+  });
+  let q = "";
+
+  let popular = async () => {
+    let url2 = `https://youtube.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=20&regionCode=in&key=AIzaSyDByU2cLMaKSElJ66OFBxDd01R4Ngv7M8A`;
+    let res = await fetch(url2);
+    let data = await res.json();
+    console.log(data);
+    append2(data.items);
+  };
+
+  popular();
+  let search = async () => {
+    let query = document.getElementById("query").value;
+    let data = await getData(query);
+    q = query;
+    append(data);
+  };
+
+  let getData = async (query) => {
+    let url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${query}&key=AIzaSyDByU2cLMaKSElJ66OFBxDd01R4Ngv7M8A`;
+    let res = await fetch(url);
+    let data = await res.json();
+
+    console.log(data);
+    return data.items;
+  };
+
+  let append = (data) => {
+    let container = document.getElementById("container");
+    container.innerHTML = null;
+    data.forEach((el) => {
+      let {
+        snippet: {
+          title,
+          thumbnails: {
+            medium: { url },
+          },
+        },
+      } = el;
+      let img = document.createElement("img");
+      img.src = url;
+
+      let h3 = document.createElement("h3");
+      h3.innerText = title;
+
+      let div = document.createElement("div");
+      div.onclick = () => {
+        saveVideo(el);
+      };
+      div.setAttribute("class", "video");
+      div.append(img, h3);
+
+      container.append(div);
+    });
+  };
+  let saveVideo = (data) => {
+    localStorage.setItem("video", JSON.stringify(data));
+    window.location.href = "video.html";
+  };
+
+  //   let sort = async () => {
+  //     let data = await getData(q);
+  //     data = data.sort((a, b) => {
+  //       return a.snippet.publishTime > b.snippet.publishTime;
+  //     });
+  //     append(data);
+  //   };
+  let filter = async () => {
+    let data = await getData(q);
+    data = data.filter((el) => {
+      return el.snippet.channelId === "UCvC4D8onUfXzvjTOM-dBfEA";
+    });
+    append(data);
+  };
+
+  let append2 = (data) => {
+    let container = document.getElementById("container");
+    container.innerHTML = null;
+    data.forEach((el) => {
+      let {
+        snippet: {
+          title,
+          thumbnails: {
+            medium: { url },
+          },
+        },
+      } = el;
+      let img = document.createElement("img");
+      img.src = url;
+
+      let h3 = document.createElement("h3");
+      h3.innerText = title;
+
+      let div = document.createElement("div");
+      div.onclick = () => {
+        saveVideo(el);
+      };
+      div.setAttribute("class", "video");
+      div.append(img, h3);
+
+      container.append(div);
+    });
+  };
+</script>
